@@ -1,0 +1,106 @@
+select top 1 * from airlines 
+select top 1 * from airports 
+select top 2 * from flights
+select top 2 * from planes
+----------------------------------------------------------------------------------------------------------------------------------
+
+--1.Which manufacturer's planes had most no of flights? And how many flights?
+
+select 
+top 1 count(manufacturer) No_of_flights ,Manufacturer
+from flights f join
+planes p 
+on
+f.tailnum=p.tailnum
+group by manufacturer
+order by count(manufacturer) desc
+
+SOLUTION : 
+          No_of_flights : 1103
+          Manufacturer : BOEING
+-------------------------------------------------------------------------------------------------------
+
+--2. Which manufacturer's planes had most no of flying hours? And how many hours?
+
+select f.[year] Y,f.[month] M,f.[day] D,f.tailnum , flight, origin,dest,distance, 
+Convert(int,f.[hour]) HR
+,manufacturer,model,Engines 
+into #temp
+from flights f join
+planes p 
+on
+f.tailnum=p.tailnum
+where f.[hour] !='NA'
+
+select top 1 sum(hr) Flying_hour,Manufacturer from #temp
+group by manufacturer
+order by sum(hr) desc
+
+SOLUTION :
+        Flying_hour : 14301
+        Manufacturer : BOEING
+
+-------------------------------------------------------------------------------------------------------------------
+--3. Which plane flew the most number of hours? And how many hours?
+
+select  top 1 sum(hr) as most_no_of_hours , model from #temp
+group by model
+order by sum(hr) desc
+
+SOLUTION : 
+          most_no_of_hours : 9326
+          model : A320-232
+ 
+-------------------------------------------------------------------------------------------------------------------------
+--4. Which destination had most delay in flights?
+
+select top 1 dest,
+ count(convert(int,arr_delay)) Arrdelay
+from flights f join
+planes p 
+on
+f.tailnum=p.tailnum
+where arr_delay!='NA' 
+group by dest
+order by count(convert(int,arr_delay)) desc
+
+SOLUTION :
+          dest : ATL
+          Arrdelay : 194
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 5. Which manufactures planes had covered most distance? And how much distance?
+
+select top 1 sum(distance) Distance,manufacturer from 
+flights f join
+planes p 
+on f.tailnum=p.tailnum 
+group by manufacturer
+order by sum(distance) desc 
+
+SOLUTION :
+          Distance : 1644180
+          manufacturer : BOEING
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--6. Which airport had most flights on weekends?
+
+
+select datename(dw,concat(year,'-',month,'-',day)) Weekends
+,* into #temp2 from flights 
+where datename(dw,concat(year,'-',month,'-',day)) in ('Saturday','Sunday')
+
+select  top 1 count(origin) No_of_flights,airport
+from #temp2  t 
+join
+airports a
+on t.origin=a.Iata_code
+group by origin,airport
+order by count(origin) desc
+
+SOLUTION :
+          No_of_flights : 325
+          Airport : John F. Kennedy International AirportÂ (New York International Airport)
+
+
+
